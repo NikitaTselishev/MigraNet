@@ -1,0 +1,6 @@
+DB_USER = "migranet"
+DB_PASSWORD = "12345"
+DB_NAME = "migranetdb"
+DB_HOST = "127.0.0.1"
+SERVER_HOST = "0.0.0.0"
+SERVER_PORT = 8000

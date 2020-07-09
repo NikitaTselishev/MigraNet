@@ -1,0 +1,6 @@
+class UnknownUserInDatabaseError(Exception):
+    ...
+
+
+class SomethingGoesWrong(Exception):
+    ...

@@ -1,0 +1,4 @@
+mypy
+black
+psycopg2
+requests
