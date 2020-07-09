@@ -6,6 +6,9 @@ import exceptions
 import interfaces
 
 
+ONE_MESSAGE = 1
+
+
 @dataclass
 class User:
     user_id: int
@@ -192,4 +195,84 @@ class Chat:
             "owner": self.owner.user_id,
             "users": [u.user_id for u in self.users],
             "messages": [m.convert_to_json() for m in self.messages],
+        }
+
+
+@dataclass
+class Action:
+    action_id: int
+    name: str
+    latitude: int
+    longitude: int
+    owner: interfaces.User
+    users: List[interfaces.User]
+    description: str
+    chat: interfaces.Chat
+    creation_time: int
+    action_time: int
+
+    @classmethod
+    def create_from_database(
+        cls, database: interfaces.Database, action_id: int
+    ) -> interfaces.Action:
+        raw_data = database.action_get(action_id)[0]
+        data = {
+            "action_id": raw_data["action_id"],
+            "name": raw_data["name"],
+            "latitude": raw_data["latitude"],
+            "longitude": raw_data["longitude"],
+            "description": raw_data["description"],
+            "creation_time": raw_data["creation_time"],
+            "action_time": raw_data["action_time"],
+            "owner": User.create_from_database(
+                database, user_id=raw_data["owner"]
+            ),
+        }
+        user_ids = database.action_get_users(data["action_id"])
+        data["users"] = []
+        for u_i in user_ids:
+            data["users"].append(
+                User.create_from_database(database, user_id=u_i["user_id"])
+            )
+        data["chat"] = Chat.create_from_database(
+            database, chat_id=raw_data["chat_id"], message_limit=1
+        )  # TODO: Fix bug
+        return cls(**data)
+
+    @classmethod
+    def create_in_database(
+        cls,
+        database: interfaces.Database,
+        name: str,
+        latitude: float,
+        longitude: float,
+        owner: interfaces.User,
+        users: List[interfaces.User],
+        description: str,
+        action_time: int,
+    ) -> interfaces.Action:
+        action = database.action_create(
+            name=name,
+            latitude=latitude,
+            longitude=longitude,
+            owner=owner.user_id,
+            users_ids=[u.user_id for u in users],
+            description=description,
+            action_time=action_time,
+        )[0]
+        return cls.create_from_database(database, action["action_id"])
+
+    # TODO: Really? More simple. JSONConverterMixIn. isinstance(...)
+    def convert_to_json(self) -> Dict[str, Any]:
+        return {
+            "action_id": self.action_id,
+            "name": self.name,
+            "latitude": self.latitude,
+            "longitude": self.longitude,
+            "owner": self.owner.convert_to_json(),
+            "users": [u.convert_to_json() for u in self.users],
+            "description": self.description,
+            "chat": self.chat.convert_to_json(),
+            "creation_time": self.creation_time,
+            "action_time": self.action_time,
         }

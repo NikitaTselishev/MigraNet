@@ -107,11 +107,23 @@ class Action(Protocol):
     action_time: int
 
     @classmethod
-    def create_from_database(cls, database: "Database", action_id: int) -> "Action":
+    def create_from_database(
+        cls, database: "Database", action_id: int
+    ) -> "Action":
         ...
 
     @classmethod
-    def create_in_database(cls, database: "Database", name: str, owner: User, users: List[User], description: str, action_time: int) -> "Action":
+    def create_in_database(
+        cls,
+        database: "Database",
+        name: str,
+        latitude: float,
+        longitude: float,
+        owner: User,
+        users: List[User],
+        description: str,
+        action_time: int,
+    ) -> "Action":
         ...
 
     def convert_to_json(self) -> Dict[str, Any]:
@@ -247,4 +259,30 @@ class Database(Protocol):
     def friends_find(
         self, simple_keys: Dict[str, Any], difficult_keys: List[Dict[str, Any]]
     ) -> List[Dict[str, Any]]:
+        ...
+
+    def action_create(
+        self,
+        name: str,
+        latitude: float,
+        longitude: float,
+        owner: int,
+        users_ids: List[int],
+        description: str,
+        action_time: int,
+    ) -> List[Dict[str, Any]]:
+        ...
+
+    def action_get_users(self, action_id: int) -> List[Dict[str, Any]]:
+        ...
+
+    def action_get(self, action_id: int) -> List[Dict[str, Any]]:
+        ...
+
+    def action_find(
+        self, latitude: float, longitude: float, r: float
+    ) -> List[Dict[str, Any]]:
+        ...
+
+    def user_get_actions(self, user_id: int) -> List[Dict[str, Any]]:
         ...

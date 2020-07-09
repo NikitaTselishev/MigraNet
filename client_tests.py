@@ -584,6 +584,41 @@ if __name__ == "__main__":
     print(response)
     print(response.content)
 
+    print("Create action")
+    response = requests.post(
+        addr,
+        json={
+            "jsonrpc": "2.0",
+            "id": 778,
+            "method": "action.create",
+            "params": {
+                "user_session": user_session,
+                "name": "Urraa",
+                "latitude": 1,
+                "longitude": 2,
+                "user_ids": [1, 2, 3],
+                "description": "Hello",
+                "action_time": 12,
+            },
+        },
+    )
+    print(response)
+    print(response.content)
+    action_id = response.json()["result"]["action_id"]
+
+    print("Get action")
+    response = requests.post(
+        addr,
+        json={
+            "jsonrpc": "2.0",
+            "id": 778,
+            "method": "action.get",
+            "params": {"user_session": user_session, "action_id": action_id,},
+        },
+    )
+    print(response)
+    print(response.content)
+
     print("Admin login")
     response = requests.post(
         addr,

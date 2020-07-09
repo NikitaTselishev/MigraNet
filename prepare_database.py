@@ -105,7 +105,7 @@ def main():
                                    "description TEXT NOT NULL, "
                                    "chat_id BIGINT NOT NULL, "
                                    "creation_time BIGINT NOT NULL, "
-                                   "action_time  BIGINT NOT NULL"
+                                   "action_time  BIGINT NOT NULL, "
                                    "PRIMARY KEY (action_id), "
                                    "FOREIGN KEY (owner) REFERENCES users (user_id) ON DELETE CASCADE, "
                                    "FOREIGN KEY (chat_id) REFERENCES chat_ids (chat_id) ON DELETE CASCADE"

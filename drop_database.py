@@ -20,7 +20,6 @@ def main():
             cursor.execute("DROP TABLE friends;")
             cursor.execute("DROP TABLE wait_friend_add;")
             cursor.execute("DROP TABLE blocked_by_user;")
-            cursor.execute("DROP TABLE alerts;")
             stmt = sql.SQL("DROP TABLE users;")
             cursor.execute(stmt)
             print("Success")
