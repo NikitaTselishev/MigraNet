@@ -276,3 +276,11 @@ class Action:
             "creation_time": self.creation_time,
             "action_time": self.action_time,
         }
+
+    def add_user(
+        self, database: interfaces.Database, user: interfaces.User
+    ) -> None:
+        if not database.action_get_by_action_and_user_id(
+            self.action_id, user.user_id
+        ):
+            database.action_add_user(self.action_id, user.user_id)

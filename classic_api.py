@@ -553,7 +553,6 @@ def friends_find(json: Dict[str, Any]) -> Dict[str, Any]:
         [
             "user_session",
             "name",
-            "user_ids",
             "description",
             "latitude",
             "longitude",
@@ -564,17 +563,21 @@ def friends_find(json: Dict[str, Any]) -> Dict[str, Any]:
 def action_create(json: Dict[str, Any]) -> Dict[str, Any]:
     params = json["params"]
     owner = _get_user_by_session(params["user_session"])
-    users = [_get_user_by_user_id(u_i) for u_i in params["user_ids"]]
-    action = models.Action.create_in_database(
-        _database,
-        name=params["name"],
-        latitude=params["latitude"],
-        longitude=params["longitude"],
-        owner=owner,
-        users=users,
-        description=params["description"],
-        action_time=params["action_time"],
-    )
+    data = {
+        "name": params["name"],
+        "latitude": params["latitude"],
+        "longitude": params["longitude"],
+        "owner": owner,
+        "description": params["description"],
+        "action_time": params["action_time"],
+    }
+    if owner.role >= constants.Roles.Admin:
+        data["users"] = [
+            _get_user_by_user_id(u_i) for u_i in params["user_ids"]
+        ]
+    else:
+        data["users"] = []
+    action = models.Action.create_in_database(_database, **data)
     return jsonrpc.create_json_response(json, action.convert_to_json())
 
 
@@ -586,3 +589,28 @@ def action_get(json: Dict[str, Any]) -> Dict[str, Any]:
     return jsonrpc.create_json_response(
         json, _get_action_by_id(params["action_id"]).convert_to_json()
     )
+
+
+@jsonrpc.Dispatcher.register("user.get_actions", [["user_session"]])
+def user_get_actions(json: Dict[str, Any]) -> Dict[str, Any]:
+    user = _get_user_by_session(int(json["params"]["user_session"]))
+    action_ids = _database.user_get_actions(user.user_id)
+    return jsonrpc.create_json_response(
+        json,
+        [
+            models.Action.create_from_database(
+                _database, a_i["action_id"]
+            ).convert_to_json()
+            for a_i in action_ids
+        ],
+    )
+
+
+@jsonrpc.Dispatcher.register(
+    "user.add_to_action", [["user_session", "action_id"]]
+)
+def user_add_to_action(json: Dict[str, Any]) -> Dict[str, Any]:
+    user = _get_user_by_session(int(json["params"]["user_session"]))
+    action = _get_action_by_id(json["params"]["action_id"])
+    action.add_user(_database, user)
+    return jsonrpc.create_json_response(json, None)

@@ -129,6 +129,9 @@ class Action(Protocol):
     def convert_to_json(self) -> Dict[str, Any]:
         ...
 
+    def add_user(self, database: "Database", user: User) -> None:
+        ...
+
 
 class Database(Protocol):
     def user_get_id_by_phone(self, phone: str) -> List[Dict[str, Any]]:
@@ -285,4 +288,12 @@ class Database(Protocol):
         ...
 
     def user_get_actions(self, user_id: int) -> List[Dict[str, Any]]:
+        ...
+
+    def action_get_by_action_and_user_id(
+        self, action_id: int, user_id: int
+    ) -> List[Dict[str, Any]]:
+        ...
+
+    def action_add_user(self, action_id: int, user_id: int) -> None:
         ...

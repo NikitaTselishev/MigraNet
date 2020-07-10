@@ -645,6 +645,70 @@ if __name__ == "__main__":
     print(response.content)
     print("Delete user by admin")
     admin_session = response.json()["result"]["user_session"]
+    print("Get admin actions")
+    response = requests.post(
+        addr,
+        json={
+            "jsonrpc": "2.0",
+            "id": 777,
+            "method": "user.get_actions",
+            "params": {"user_session": admin_session},
+        },
+    )
+    print(response)
+    print(response.content)
+
+    print("Create action")
+    response = requests.post(
+        addr,
+        json={
+            "jsonrpc": "2.0",
+            "id": 778,
+            "method": "action.create",
+            "params": {
+                "user_session": admin_session,
+                "name": "Ur",
+                "latitude": 1,
+                "longitude": 2,
+                "user_ids": [2],
+                "description": "Hello",
+                "action_time": 12,
+            },
+        },
+    )
+    print(response)
+    print(response.content)
+    admin_action_id = response.json()["result"]["action_id"]
+
+    print("Add user to action")
+    response = requests.post(
+        addr,
+        json={
+            "jsonrpc": "2.0",
+            "id": 777,
+            "method": "user.add_to_action",
+            "params": {
+                "action_id": admin_action_id,
+                "user_session": user_session,
+            },
+        },
+    )
+    print(response)
+    print(response.content)
+
+    print("Get user actions")
+    response = requests.post(
+        addr,
+        json={
+            "jsonrpc": "2.0",
+            "id": 777,
+            "method": "user.get_actions",
+            "params": {"user_session": user_session},
+        },
+    )
+    print(response)
+    print(response.content)
+
     # admin_session =
     response = requests.post(
         addr,

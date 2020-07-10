@@ -160,7 +160,7 @@ class NullDatabase:
         return NotImplemented
 
     def action_get_users(self, action_id: int) -> List[Dict[str, Any]]:
-        ...
+        return NotImplemented
 
     def action_get(self, action_id: int) -> List[Dict[str, Any]]:
         return NotImplemented
@@ -171,6 +171,14 @@ class NullDatabase:
         return NotImplemented
 
     def user_get_actions(self, user_id: int) -> List[Dict[str, Any]]:
+        return NotImplemented
+
+    def action_get_by_action_and_user_id(
+        self, action_id: int, user_id: int
+    ) -> List[Dict[str, Any]]:
+        return NotImplemented
+
+    def action_add_user(self, action_id: int, user_id: int) -> None:
         return NotImplemented
 
 
@@ -528,6 +536,20 @@ class Database(PostgreSQLEngine):
     def user_get_actions(self, user_id: int) -> List[Dict[str, Any]]:
         return self.get_from_where(
             constants.ACTION_MEMBERS_DB, "user_id=%d" % user_id, ["action_id"]
+        )
+
+    def action_get_by_action_and_user_id(
+        self, action_id: int, user_id: int
+    ) -> List[Dict[str, Any]]:
+        return self.get_from_where(
+            constants.ACTION_MEMBERS_DB,
+            "action_id=%d AND user_id=%d" % (action_id, user_id),
+        )
+
+    def action_add_user(self, action_id: int, user_id: int) -> None:
+        self.insert_value(
+            constants.ACTION_MEMBERS_DB,
+            {"action_id": action_id, "user_id": user_id},
         )
 
 
