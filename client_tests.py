@@ -1,3 +1,4 @@
+import time
 import requests
 
 
@@ -598,7 +599,7 @@ if __name__ == "__main__":
                 "longitude": 2,
                 "user_ids": [1, 2, 3],
                 "description": "Hello",
-                "action_time": 12,
+                "action_time": int(time.time()) + 700,
             },
         },
     )
@@ -672,7 +673,7 @@ if __name__ == "__main__":
                 "longitude": 5,
                 "user_ids": [2],
                 "description": "Hello",
-                "action_time": 12,
+                "action_time": int(time.time()) + 600,
             },
         },
     )
@@ -791,6 +792,25 @@ if __name__ == "__main__":
                 "latitude": 0,
                 "longitude": 0,
                 "r": 10,
+            },
+        },
+    )
+    print(response)
+    print(response.content)
+
+    print("Find actions (Null)")
+    response = requests.post(
+        addr,
+        json={
+            "jsonrpc": "2.0",
+            "id": 777,
+            "method": "action.find",
+            "params": {
+                "user_session": user_session,
+                "latitude": 0,
+                "longitude": 0,
+                "r": 10,
+                "delta_time": 0,
             },
         },
     )

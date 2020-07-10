@@ -640,7 +640,7 @@ def user_leave_chat(json: Dict[str, Any]) -> Dict[str, Any]:
 )
 def action_find(json: Dict[str, Any]) -> Dict[str, Any]:
     params = json["params"]
-    user = _get_user_by_session(int(params["user_session"]))
+    _get_user_by_session(int(params["user_session"]))
     result = [
         models.Action.create_from_database(
             _database, a_i["action_id"]
@@ -649,6 +649,7 @@ def action_find(json: Dict[str, Any]) -> Dict[str, Any]:
             latitude=params["latitude"],
             longitude=params["longitude"],
             r=params["r"],
+            delta_time=params.get("delta_time"),
         )
     ]
     return jsonrpc.create_json_response(json, result)

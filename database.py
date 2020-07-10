@@ -166,7 +166,11 @@ class NullDatabase:
         return NotImplemented
 
     def action_find(
-        self, latitude: float, longitude: float, r: float
+        self,
+        latitude: float,
+        longitude: float,
+        r: float,
+        delta_time: Optional[int] = None,
     ) -> List[Dict[str, Any]]:
         return NotImplemented
 
@@ -534,12 +538,24 @@ class Database(PostgreSQLEngine):
         )
 
     def action_find(
-        self, latitude: float, longitude: float, r: float
+        self,
+        latitude: float,
+        longitude: float,
+        r: float,
+        delta_time: Optional[int] = None,
     ) -> List[Dict[str, Any]]:
         return self.get_from_where(
             constants.ACTIONS_DB,
-            "latitude>=%f AND latitude<=%f AND longitude>=%f AND longitude<=%f"
-            % (latitude - r, latitude + r, longitude - r, longitude + r),
+            "latitude>=%f AND latitude<=%f AND longitude>=%f AND longitude<=%f %s"
+            % (
+                latitude - r,
+                latitude + r,
+                longitude - r,
+                longitude + r,
+                ""
+                if delta_time is None
+                else ("AND action_time<=%d" % int(time.time() + delta_time)),
+            ),
             ["action_id"],
         )
 

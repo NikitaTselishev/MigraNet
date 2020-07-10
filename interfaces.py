@@ -289,7 +289,11 @@ class Database(Protocol):
         ...
 
     def action_find(
-        self, latitude: float, longitude: float, r: float
+        self,
+        latitude: float,
+        longitude: float,
+        r: float,
+        delta_time: Optional[int] = None,
     ) -> List[Dict[str, Any]]:
         ...
 
