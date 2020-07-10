@@ -105,7 +105,7 @@ def main():
                                    "description TEXT NOT NULL, "
                                    "chat_id BIGINT NOT NULL, "
                                    "creation_time BIGINT NOT NULL, "
-                                   "action_time  BIGINT NOT NULL"
+                                   "action_time  BIGINT NOT NULL, "
                                    "PRIMARY KEY (action_id), "
                                    "FOREIGN KEY (owner) REFERENCES users (user_id) ON DELETE CASCADE, "
                                    "FOREIGN KEY (chat_id) REFERENCES chat_ids (chat_id) ON DELETE CASCADE"
@@ -113,7 +113,9 @@ def main():
             cursor.execute(sql.SQL("CREATE TABLE action_members ("
                                    "user_id BIGINT NOT NULL, "
                                    "action_id BIGINT NOT NULL, "
-                                   "UNIQUE(user_id, action_id)"
+                                   "UNIQUE(user_id, action_id), "
+                                   "FOREIGN KEY (user_id) REFERENCES users (user_id) ON DELETE CASCADE, "
+                                   "FOREIGN KEY (action_id) REFERENCES actions (action_id) ON DELETE CASCADE"
                                    ");"))
             # Crime detector
             cursor.execute(sql.SQL("CREATE TABLE geolocations ("

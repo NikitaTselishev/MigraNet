@@ -220,6 +220,22 @@ def _user_in_friends(
         )
 
 
+def _action_exists(action_id: int) -> None:
+    result = _database.action_get(action_id)
+    if not result:
+        raise jsonrpc.JSONRPCError(
+            {
+                "code": -1012,
+                "message": "Action id '%d' is unknown" % action_id,
+            }
+        )
+
+
+def _get_action_by_id(action_id: int) -> interfaces.Action:
+    _action_exists(action_id)
+    return models.Action.create_from_database(_database, action_id)
+
+
 @jsonrpc.Dispatcher.register(
     "user.create",
     [["first_name", "second_name", "birthday", "password", "phone", "email"]],
@@ -529,3 +545,111 @@ def friends_find(json: Dict[str, Any]) -> Dict[str, Any]:
             for u_i in _database.friends_find(simple_keys, difficult_keys)
         ],
     )
+
+
+@jsonrpc.Dispatcher.register(
+    "action.create",
+    [
+        [
+            "user_session",
+            "name",
+            "description",
+            "latitude",
+            "longitude",
+            "action_time",
+        ]
+    ],
+)
+def action_create(json: Dict[str, Any]) -> Dict[str, Any]:
+    params = json["params"]
+    owner = _get_user_by_session(params["user_session"])
+    data = {
+        "name": params["name"],
+        "latitude": params["latitude"],
+        "longitude": params["longitude"],
+        "owner": owner,
+        "description": params["description"],
+        "action_time": params["action_time"],
+    }
+    if owner.role >= constants.Roles.Admin:
+        data["users"] = [
+            _get_user_by_user_id(u_i) for u_i in params["user_ids"]
+        ]
+    else:
+        data["users"] = []
+    action = models.Action.create_in_database(_database, **data)
+    return jsonrpc.create_json_response(json, action.convert_to_json())
+
+
+@jsonrpc.Dispatcher.register("action.get", [["user_session", "action_id"]])
+def action_get(json: Dict[str, Any]) -> Dict[str, Any]:
+    params = json["params"]
+    _get_user_by_session(params["user_session"])
+    _action_exists(params["action_id"])
+    return jsonrpc.create_json_response(
+        json, _get_action_by_id(params["action_id"]).convert_to_json()
+    )
+
+
+@jsonrpc.Dispatcher.register("user.get_actions", [["user_session"]])
+def user_get_actions(json: Dict[str, Any]) -> Dict[str, Any]:
+    user = _get_user_by_session(int(json["params"]["user_session"]))
+    action_ids = _database.user_get_actions(user.user_id)
+    return jsonrpc.create_json_response(
+        json,
+        [
+            models.Action.create_from_database(
+                _database, a_i["action_id"]
+            ).convert_to_json()
+            for a_i in action_ids
+        ],
+    )
+
+
+@jsonrpc.Dispatcher.register(
+    "user.add_to_action", [["user_session", "action_id"]]
+)
+def user_add_to_action(json: Dict[str, Any]) -> Dict[str, Any]:
+    user = _get_user_by_session(int(json["params"]["user_session"]))
+    action = _get_action_by_id(json["params"]["action_id"])
+    action.add_user(_database, user)
+    return jsonrpc.create_json_response(json, None)
+
+
+@jsonrpc.Dispatcher.register(
+    "user.leave_action", [["user_session", "action_id"]]
+)
+def user_leave_action(json: Dict[str, Any]) -> Dict[str, Any]:
+    user = _get_user_by_session(int(json["params"]["user_session"]))
+    action = _get_action_by_id(json["params"]["action_id"])
+    action.delete_user(_database, user)
+    return jsonrpc.create_json_response(json, None)
+
+
+@jsonrpc.Dispatcher.register("user.leave_chat", [["user_session", "chat_id"]])
+def user_leave_chat(json: Dict[str, Any]) -> Dict[str, Any]:
+    user = _get_user_by_session(int(json["params"]["user_session"]))
+    chat = _get_chat(chat_id=json["params"]["chat_id"], message_limit=0)
+    chat.delete_user(_database, user)
+    return jsonrpc.create_json_response(json, None)
+
+
+# User session?
+@jsonrpc.Dispatcher.register(
+    "action.find", [["user_session", "latitude", "longitude", "r"]]
+)
+def action_find(json: Dict[str, Any]) -> Dict[str, Any]:
+    params = json["params"]
+    _get_user_by_session(int(params["user_session"]))
+    result = [
+        models.Action.create_from_database(
+            _database, a_i["action_id"]
+        ).convert_to_json()
+        for a_i in _database.action_find(
+            latitude=params["latitude"],
+            longitude=params["longitude"],
+            r=params["r"],
+            delta_time=params.get("delta_time"),
+        )
+    ]
+    return jsonrpc.create_json_response(json, result)

@@ -1,3 +1,4 @@
+import time
 import requests
 
 
@@ -584,6 +585,41 @@ if __name__ == "__main__":
     print(response)
     print(response.content)
 
+    print("Create action")
+    response = requests.post(
+        addr,
+        json={
+            "jsonrpc": "2.0",
+            "id": 778,
+            "method": "action.create",
+            "params": {
+                "user_session": user_session,
+                "name": "Urraa",
+                "latitude": 1,
+                "longitude": 2,
+                "user_ids": [1, 2, 3],
+                "description": "Hello",
+                "action_time": int(time.time()) + 700,
+            },
+        },
+    )
+    print(response)
+    print(response.content)
+    action_id = response.json()["result"]["action_id"]
+
+    print("Get action")
+    response = requests.post(
+        addr,
+        json={
+            "jsonrpc": "2.0",
+            "id": 778,
+            "method": "action.get",
+            "params": {"user_session": user_session, "action_id": action_id,},
+        },
+    )
+    print(response)
+    print(response.content)
+
     print("Admin login")
     response = requests.post(
         addr,
@@ -610,6 +646,177 @@ if __name__ == "__main__":
     print(response.content)
     print("Delete user by admin")
     admin_session = response.json()["result"]["user_session"]
+    print("Get admin actions")
+    response = requests.post(
+        addr,
+        json={
+            "jsonrpc": "2.0",
+            "id": 777,
+            "method": "user.get_actions",
+            "params": {"user_session": admin_session},
+        },
+    )
+    print(response)
+    print(response.content)
+
+    print("Create action")
+    response = requests.post(
+        addr,
+        json={
+            "jsonrpc": "2.0",
+            "id": 778,
+            "method": "action.create",
+            "params": {
+                "user_session": admin_session,
+                "name": "Ur",
+                "latitude": 3,
+                "longitude": 5,
+                "user_ids": [2],
+                "description": "Hello",
+                "action_time": int(time.time()) + 600,
+            },
+        },
+    )
+    print(response)
+    print(response.content)
+    admin_action_id = response.json()["result"]["action_id"]
+
+    print("Add user to action")
+    response = requests.post(
+        addr,
+        json={
+            "jsonrpc": "2.0",
+            "id": 777,
+            "method": "user.add_to_action",
+            "params": {
+                "action_id": admin_action_id,
+                "user_session": user_session,
+            },
+        },
+    )
+    print(response)
+    print(response.content)
+
+    print("Get user actions")
+    response = requests.post(
+        addr,
+        json={
+            "jsonrpc": "2.0",
+            "id": 777,
+            "method": "user.get_actions",
+            "params": {"user_session": user_session},
+        },
+    )
+    print(response)
+    print(response.content)
+
+    print("User leaves action")
+    response = requests.post(
+        addr,
+        json={
+            "jsonrpc": "2.0",
+            "id": 777,
+            "method": "user.leave_action",
+            "params": {
+                "action_id": admin_action_id,
+                "user_session": user_session,
+            },
+        },
+    )
+    print(response)
+    print(response.content)
+
+    print("Get user actions")
+    response = requests.post(
+        addr,
+        json={
+            "jsonrpc": "2.0",
+            "id": 777,
+            "method": "user.get_actions",
+            "params": {"user_session": user_session},
+        },
+    )
+    print(response)
+    print(response.content)
+
+    print("Get user chats")
+    response = requests.post(
+        addr,
+        json={
+            "jsonrpc": "2.0",
+            "id": 777,
+            "method": "chat.get_chat_list",
+            "params": {"user_session": user_session},
+        },
+    )
+    print(response)
+    print(response.content)
+
+    new_chat_id = response.json()["result"][0]["chat_id"]
+
+    print("User leave chat")
+    response = requests.post(
+        addr,
+        json={
+            "jsonrpc": "2.0",
+            "id": 777,
+            "method": "user.leave_chat",
+            "params": {"user_session": user_session, "chat_id": new_chat_id},
+        },
+    )
+    print(response)
+    print(response.content)
+
+    print("Get user chats")
+    response = requests.post(
+        addr,
+        json={
+            "jsonrpc": "2.0",
+            "id": 777,
+            "method": "chat.get_chat_list",
+            "params": {"user_session": user_session},
+        },
+    )
+    print(response)
+    print(response.content)
+
+    print("Find actions")
+    response = requests.post(
+        addr,
+        json={
+            "jsonrpc": "2.0",
+            "id": 777,
+            "method": "action.find",
+            "params": {
+                "user_session": user_session,
+                "latitude": 0,
+                "longitude": 0,
+                "r": 10,
+            },
+        },
+    )
+    print(response)
+    print(response.content)
+
+    print("Find actions (Null)")
+    response = requests.post(
+        addr,
+        json={
+            "jsonrpc": "2.0",
+            "id": 777,
+            "method": "action.find",
+            "params": {
+                "user_session": user_session,
+                "latitude": 0,
+                "longitude": 0,
+                "r": 10,
+                "delta_time": 0,
+            },
+        },
+    )
+    print(response)
+    print(response.content)
+
     # admin_session =
     response = requests.post(
         addr,
