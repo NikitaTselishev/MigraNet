@@ -11,6 +11,8 @@ import android.widget.TextView;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import com.example.migranet.Requests;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -26,15 +28,19 @@ public class LoginActivity extends AppCompatActivity {
     EditText password_view;
 
     TextView status_view;
+    public static String session="";
+    public static String error="";
 
     public void goto_register(View view){
         Intent intent = new Intent(LoginActivity.this, RegisterActivity.class);
         startActivity(intent);
     }
-    public void login(View view){
+    public void login(View view) throws JSONException {
 
         String login = email_view.getText().toString();
         String password = password_view.getText().toString();
+
+
 
 
         JSONObject user = new JSONObject();
@@ -97,14 +103,15 @@ public class LoginActivity extends AppCompatActivity {
                     runOnUiThread(new Runnable(){
                         @Override
                         public void run(){
-                            status_view.setText(decodedString);
+                            //status_view.setText(decodedString);
                             try {
                                 JSONObject answer = new JSONObject(decodedString);
                                 if (answer.has("result")){
-                                    status_view.setText("Your user session is "+answer.getJSONObject("result").getString("user_session"));
+                                    //status_view.setText("Your user session is "+answer.getJSONObject("result").getString("user_session"));
+                                    session=answer.getJSONObject("result").getString("user_session");
                                 } else{
                                     if (answer.has("error")) {
-                                        status_view.setText(answer.getJSONObject("error").getString("message"));
+                                        error=answer.getJSONObject("error").getString("message");
                                     }
                                 }
                             } catch (JSONException e) {
@@ -127,6 +134,15 @@ public class LoginActivity extends AppCompatActivity {
             }
         }).start();
 
+
+        if(session!=""){
+            ((MigraNet)this.getApplication()).setSession(session);
+            Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+            startActivity(intent);
+        }
+        if (error!=""){
+            status_view.setText(error);
+        }
     }
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -136,6 +152,6 @@ public class LoginActivity extends AppCompatActivity {
         email_view = (EditText)findViewById(R.id.email);
         password_view = (EditText)findViewById(R.id.password);
 
-        status_view = (TextView)findViewById(R.id.status);
+        status_view = (TextView)findViewById(R.id.status_view);
     }
 }

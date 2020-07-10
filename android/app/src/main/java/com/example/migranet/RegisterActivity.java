@@ -2,7 +2,6 @@ package com.example.migranet;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.EditText;
@@ -43,7 +42,7 @@ public class RegisterActivity extends AppCompatActivity {
         phone_view = (EditText)findViewById(R.id.phone);
         password_view = (EditText)findViewById(R.id.password);
 
-        status_view = (TextView)findViewById(R.id.status);
+        status_view = (TextView)findViewById(R.id.status_view);
     }
 
     public void register(View view){
