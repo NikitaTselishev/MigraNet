@@ -197,6 +197,14 @@ class Chat:
             "messages": [m.convert_to_json() for m in self.messages],
         }
 
+    # TODO: Set is good. Don't use list =)
+    def delete_user(
+        self, database: interfaces.Database, user: interfaces.User
+    ) -> None:
+        if user in self.users:
+            database.user_leave_chat(user.user_id, self.chat_id)
+            self.users.pop(self.users.index(user))
+
 
 @dataclass
 class Action:
@@ -283,4 +291,15 @@ class Action:
         if not database.action_get_by_action_and_user_id(
             self.action_id, user.user_id
         ):
+            self.users.append(user)
             database.action_add_user(self.action_id, user.user_id)
+            self.chat.users.append(user)
+            database.user_add_to_chat(user.user_id, self.chat.chat_id)
+
+    def delete_user(
+        self, database: interfaces.Database, user: interfaces.User
+    ) -> None:
+        if user in self.users:
+            database.user_leave_action(user.user_id, self.action_id)
+            self.users.pop(self.users.index(user))
+            self.chat.delete_user(database, user)

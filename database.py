@@ -181,6 +181,15 @@ class NullDatabase:
     def action_add_user(self, action_id: int, user_id: int) -> None:
         return NotImplemented
 
+    def user_add_to_chat(self, user_id: int, chat_id: int) -> None:
+        return NotImplemented
+
+    def user_leave_action(self, user_id: int, action_id: int) -> None:
+        return NotImplemented
+
+    def user_leave_chat(self, user_id: int, chat_id: int) -> None:
+        return NotImplemented
+
 
 class Database(PostgreSQLEngine):
     def user_get_id_by_phone(self, phone: str) -> List[Dict[str, Any]]:
@@ -529,8 +538,9 @@ class Database(PostgreSQLEngine):
     ) -> List[Dict[str, Any]]:
         return self.get_from_where(
             constants.ACTIONS_DB,
-            "latitude>=%f AND latitude<=%f AND longitude>=%f AND logitude<=%f"
+            "latitude>=%f AND latitude<=%f AND longitude>=%f AND longitude<=%f"
             % (latitude - r, latitude + r, longitude - r, longitude + r),
+            ["action_id"],
         )
 
     def user_get_actions(self, user_id: int) -> List[Dict[str, Any]]:
@@ -550,6 +560,23 @@ class Database(PostgreSQLEngine):
         self.insert_value(
             constants.ACTION_MEMBERS_DB,
             {"action_id": action_id, "user_id": user_id},
+        )
+
+    def user_add_to_chat(self, user_id: int, chat_id: int) -> None:
+        self.insert_value(
+            constants.SINGLE_CHATS_DB, {"user_id": user_id, "chat_id": chat_id}
+        )
+
+    def user_leave_action(self, user_id: int, action_id: int) -> None:
+        self.delete_from_where(
+            constants.ACTION_MEMBERS_DB,
+            "user_id=%d AND action_id=%d" % (user_id, action_id),
+        )
+
+    def user_leave_chat(self, user_id: int, chat_id: int) -> None:
+        self.delete_from_where(
+            constants.SINGLE_CHATS_DB,
+            "user_id=%d AND chat_id=%d" % (user_id, chat_id),
         )
 
 

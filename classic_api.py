@@ -614,3 +614,41 @@ def user_add_to_action(json: Dict[str, Any]) -> Dict[str, Any]:
     action = _get_action_by_id(json["params"]["action_id"])
     action.add_user(_database, user)
     return jsonrpc.create_json_response(json, None)
+
+
+@jsonrpc.Dispatcher.register(
+    "user.leave_action", [["user_session", "action_id"]]
+)
+def user_leave_action(json: Dict[str, Any]) -> Dict[str, Any]:
+    user = _get_user_by_session(int(json["params"]["user_session"]))
+    action = _get_action_by_id(json["params"]["action_id"])
+    action.delete_user(_database, user)
+    return jsonrpc.create_json_response(json, None)
+
+
+@jsonrpc.Dispatcher.register("user.leave_chat", [["user_session", "chat_id"]])
+def user_leave_chat(json: Dict[str, Any]) -> Dict[str, Any]:
+    user = _get_user_by_session(int(json["params"]["user_session"]))
+    chat = _get_chat(chat_id=json["params"]["chat_id"], message_limit=0)
+    chat.delete_user(_database, user)
+    return jsonrpc.create_json_response(json, None)
+
+
+# User session?
+@jsonrpc.Dispatcher.register(
+    "action.find", [["user_session", "latitude", "longitude", "r"]]
+)
+def action_find(json: Dict[str, Any]) -> Dict[str, Any]:
+    params = json["params"]
+    user = _get_user_by_session(int(params["user_session"]))
+    result = [
+        models.Action.create_from_database(
+            _database, a_i["action_id"]
+        ).convert_to_json()
+        for a_i in _database.action_find(
+            latitude=params["latitude"],
+            longitude=params["longitude"],
+            r=params["r"],
+        )
+    ]
+    return jsonrpc.create_json_response(json, result)

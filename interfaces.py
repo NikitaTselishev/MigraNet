@@ -82,6 +82,9 @@ class Chat(Protocol):
     def convert_to_json(self) -> Dict[str, Any]:
         ...
 
+    def delete_user(self, database: "Database", user: User) -> None:
+        ...
+
 
 class Message(Protocol):
     chat_id: int
@@ -130,6 +133,9 @@ class Action(Protocol):
         ...
 
     def add_user(self, database: "Database", user: User) -> None:
+        ...
+
+    def delete_user(self, database: "Database", user: User) -> None:
         ...
 
 
@@ -296,4 +302,13 @@ class Database(Protocol):
         ...
 
     def action_add_user(self, action_id: int, user_id: int) -> None:
+        ...
+
+    def user_add_to_chat(self, user_id: int, chat_id: int) -> None:
+        ...
+
+    def user_leave_action(self, user_id: int, action_id: int) -> None:
+        ...
+
+    def user_leave_chat(self, user_id: int, chat_id: int) -> None:
         ...
