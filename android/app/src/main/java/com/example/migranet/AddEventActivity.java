@@ -1,28 +1,19 @@
 package com.example.migranet;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.cardview.widget.CardView;
-import androidx.core.app.ActivityCompat;
 
-import android.Manifest;
 import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationManager;
 import android.os.Bundle;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
-import android.widget.LinearLayout;
+import android.widget.EditText;
 import android.widget.TextView;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.w3c.dom.Text;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -34,23 +25,29 @@ import java.net.MalformedURLException;
 import java.net.ProtocolException;
 import java.net.URL;
 
-public class EventsActivity extends AppCompatActivity {
-    //TextView status_view;
-    LinearLayout layout;
+public class AddEventActivity extends AppCompatActivity {
+    EditText name_view;
+    EditText description_view;
+    EditText time_view;
 
+    TextView status_view;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_events);
+        setContentView(R.layout.activity_add_event);
 
-        //status_view = (TextView) findViewById(R.id.status_view);
-        layout = (LinearLayout) findViewById(R.id.events);
+        name_view = (EditText)findViewById(R.id.name_view);
+        description_view = (EditText)findViewById(R.id.description_view);
+        time_view = (EditText)findViewById(R.id.time_view);
 
-
+        status_view = (TextView)findViewById(R.id.status_view);
     }
 
+    public void create_event(View view){
+        String name = name_view.getText().toString();
+        String description = description_view.getText().toString();
+        String time = time_view.getText().toString();
 
-    public void find_events(View view) throws JSONException {
         LocationManager lm = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         @SuppressLint("MissingPermission") Location location = lm.getLastKnownLocation(LocationManager.GPS_PROVIDER);
         final double longitude = location.getLongitude();
@@ -61,32 +58,36 @@ public class EventsActivity extends AppCompatActivity {
         String session=((MigraNet)this.getApplication()).getSession();
 
 
-
-
-        JSONObject filter = new JSONObject();
+        //forming user json
+        JSONObject event = new JSONObject();
         try {
-            filter.put("user_session", session);
-            filter.put("latitude", latitude);
-            filter.put("longitude", longitude);
-            filter.put("r", 100);
+            event.put("user_session", Integer.parseInt(session));
+            event.put("name", name);
+            event.put("description", description);
+            event.put("latitude", latitude);
+            event.put("longitude", longitude);
+            event.put("action_time", Integer.parseInt(time));
         } catch (JSONException e){
             e.printStackTrace();
         }
 
+        //forming register_request json
         final JSONObject request = new JSONObject();
         try{
             request.put("jsonrpc", "2.0");
             request.put("id", 777);
-            request.put("method", "action.find");
-            request.put("params",filter);
+            request.put("method", "action.create");
+            request.put("params",event);
         } catch (JSONException e){
             e.printStackTrace();
         }
 
+        status_view.setText(request.toString());
 
-
+        //starting new request
         new Thread(new Runnable() {
             public void run() {
+
                 URL url = null;
                 try {
                     url = new URL("http://81.91.176.31:9989/");
@@ -127,30 +128,6 @@ public class EventsActivity extends AppCompatActivity {
                         @Override
                         public void run(){
                             //status_view.setText(decodedString);
-                            try {
-                                JSONObject answer = new JSONObject(decodedString);
-
-                                String test_text=answer.getString("result");
-                                JSONArray items = new JSONArray(test_text);
-
-                                LayoutInflater inflater = getLayoutInflater();
-
-                                for (int i=0;i<items.length();i++){
-                                    JSONObject item = items.getJSONObject(i);
-
-                                    View new_view = inflater.inflate(R.layout.event,layout);
-
-                                    CardView card_view =(CardView) layout.getChildAt(i);
-                                    TextView name_view = (TextView)   ((CardView)card_view).getChildAt(0);
-                                    name_view.setText(item.getString("name"));
-                                    TextView description_view = (TextView)   ((CardView)card_view).getChildAt(1);
-                                    description_view.setText(item.getString("description"));
-                                }
-                                //status_view.setText(answer.toString());
-                            } catch (JSONException e) {
-                                e.printStackTrace();
-                            }
-
                         }
 
                     });
@@ -166,20 +143,10 @@ public class EventsActivity extends AppCompatActivity {
 
             }
         }).start();
-
-
-
-
     }
 
-
-    public void goto_home(View view){
-        Intent intent = new Intent(EventsActivity.this, MainActivity.class);
-        startActivity(intent);
-
-    }
-    public void goto_add_event(View view){
-        Intent intent = new Intent(EventsActivity.this, AddEventActivity.class);
+    public void goto_events(View view){
+        Intent intent = new Intent(AddEventActivity.this, EventsActivity.class);
         startActivity(intent);
 
     }
