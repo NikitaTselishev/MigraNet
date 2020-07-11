@@ -243,7 +243,7 @@ class Action:
                 User.create_from_database(database, user_id=u_i["user_id"])
             )
         data["chat"] = Chat.create_from_database(
-            database, chat_id=raw_data["chat_id"], message_limit=1
+            database, chat_id=raw_data["chat_id"]
         )  # TODO: Fix bug
         return cls(**data)
 
