@@ -287,7 +287,8 @@ def user_login_by_email(json: Dict[str, Any]) -> Dict[str, Any]:
     params = json["params"]
     user = _get_user_by_email(params["email"])
     return jsonrpc.create_json_response(
-        json, {"user_session": _user_login(user, params["password"])}
+        json, {"user_session": _user_login(user, params["password"]), 
+		"user_id": user.user_id}
     )
 
 
@@ -390,14 +391,8 @@ def single_chats_get_by_user_id(json: Dict[str, Any]) -> Dict[str, Any]:
     user = _get_user_by_session(session)
     chats = []
     for c_i in _database.single_chat_ids_get_by_user_id(user.user_id):
-        c = _database.single_chat_meta_info_get_by_chat_id(c_i["chat_id"])[0]
-        chats.append(
-            {
-                "chat_id": c["chat_id"],
-                "owner": c["owner"],
-                "chat_name": c["chat_name"],
-            }
-        )
+        c = _get_chat(c_i["chat_id"], message_limit=1)
+        chats.append(c.convert_to_json())
     return jsonrpc.create_json_response(json, chats)
 
 
@@ -565,15 +560,15 @@ def action_create(json: Dict[str, Any]) -> Dict[str, Any]:
     owner = _get_user_by_session(params["user_session"])
     data = {
         "name": params["name"],
-        "latitude": params["latitude"],
-        "longitude": params["longitude"],
+        "latitude": float(params["latitude"]),
+        "longitude": float(params["longitude"]),
         "owner": owner,
         "description": params["description"],
-        "action_time": params["action_time"],
+        "action_time": int(params["action_time"]),
     }
     if owner.role >= constants.Roles.Admin:
         data["users"] = [
-            _get_user_by_user_id(u_i) for u_i in params["user_ids"]
+            _get_user_by_user_id(int(u_i)) for u_i in params["user_ids"]
         ]
     else:
         data["users"] = []
@@ -584,10 +579,10 @@ def action_create(json: Dict[str, Any]) -> Dict[str, Any]:
 @jsonrpc.Dispatcher.register("action.get", [["user_session", "action_id"]])
 def action_get(json: Dict[str, Any]) -> Dict[str, Any]:
     params = json["params"]
-    _get_user_by_session(params["user_session"])
-    _action_exists(params["action_id"])
+    _get_user_by_session(int(params["user_session"]))
+    _action_exists(int(params["action_id"]))
     return jsonrpc.create_json_response(
-        json, _get_action_by_id(params["action_id"]).convert_to_json()
+        json, _get_action_by_id(int(params["action_id"])).convert_to_json()
     )
 
 
@@ -599,7 +594,7 @@ def user_get_actions(json: Dict[str, Any]) -> Dict[str, Any]:
         json,
         [
             models.Action.create_from_database(
-                _database, a_i["action_id"]
+                _database, int(a_i["action_id"])
             ).convert_to_json()
             for a_i in action_ids
         ],
@@ -611,7 +606,7 @@ def user_get_actions(json: Dict[str, Any]) -> Dict[str, Any]:
 )
 def user_add_to_action(json: Dict[str, Any]) -> Dict[str, Any]:
     user = _get_user_by_session(int(json["params"]["user_session"]))
-    action = _get_action_by_id(json["params"]["action_id"])
+    action = _get_action_by_id(int(json["params"]["action_id"]))
     action.add_user(_database, user)
     return jsonrpc.create_json_response(json, None)
 
@@ -621,7 +616,7 @@ def user_add_to_action(json: Dict[str, Any]) -> Dict[str, Any]:
 )
 def user_leave_action(json: Dict[str, Any]) -> Dict[str, Any]:
     user = _get_user_by_session(int(json["params"]["user_session"]))
-    action = _get_action_by_id(json["params"]["action_id"])
+    action = _get_action_by_id(int(json["params"]["action_id"]))
     action.delete_user(_database, user)
     return jsonrpc.create_json_response(json, None)
 
@@ -629,7 +624,7 @@ def user_leave_action(json: Dict[str, Any]) -> Dict[str, Any]:
 @jsonrpc.Dispatcher.register("user.leave_chat", [["user_session", "chat_id"]])
 def user_leave_chat(json: Dict[str, Any]) -> Dict[str, Any]:
     user = _get_user_by_session(int(json["params"]["user_session"]))
-    chat = _get_chat(chat_id=json["params"]["chat_id"], message_limit=0)
+    chat = _get_chat(chat_id=int(json["params"]["chat_id"]), message_limit=0)
     chat.delete_user(_database, user)
     return jsonrpc.create_json_response(json, None)
 
@@ -643,12 +638,12 @@ def action_find(json: Dict[str, Any]) -> Dict[str, Any]:
     _get_user_by_session(int(params["user_session"]))
     result = [
         models.Action.create_from_database(
-            _database, a_i["action_id"]
+            _database, int(a_i["action_id"])
         ).convert_to_json()
         for a_i in _database.action_find(
-            latitude=params["latitude"],
-            longitude=params["longitude"],
-            r=params["r"],
+            latitude=float(params["latitude"]),
+            longitude=float(params["longitude"]),
+            r=float(params["r"]),
             delta_time=params.get("delta_time"),
         )
     ]
