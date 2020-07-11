@@ -287,7 +287,8 @@ def user_login_by_email(json: Dict[str, Any]) -> Dict[str, Any]:
     params = json["params"]
     user = _get_user_by_email(params["email"])
     return jsonrpc.create_json_response(
-        json, {"user_session": _user_login(user, params["password"])}
+        json, {"user_session": _user_login(user, params["password"]), 
+		"user_id": user.user_id}
     )
 
 
