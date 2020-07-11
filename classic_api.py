@@ -390,14 +390,8 @@ def single_chats_get_by_user_id(json: Dict[str, Any]) -> Dict[str, Any]:
     user = _get_user_by_session(session)
     chats = []
     for c_i in _database.single_chat_ids_get_by_user_id(user.user_id):
-        c = _database.single_chat_meta_info_get_by_chat_id(c_i["chat_id"])[0]
-        chats.append(
-            {
-                "chat_id": c["chat_id"],
-                "owner": c["owner"],
-                "chat_name": c["chat_name"],
-            }
-        )
+        c = _get_chat(c_i["chat_id"], message_limit=1)
+        chats.append(c.convert_to_json())
     return jsonrpc.create_json_response(json, chats)
 
 
