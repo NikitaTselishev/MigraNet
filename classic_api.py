@@ -643,7 +643,7 @@ def action_find(json: Dict[str, Any]) -> Dict[str, Any]:
             latitude=float(params["latitude"]),
             longitude=float(params["longitude"]),
             r=float(params["r"]),
-            delta_time=int(params.get("delta_time")),
+            delta_time=params.get("delta_time"),
         )
     ]
     return jsonrpc.create_json_response(json, result)
