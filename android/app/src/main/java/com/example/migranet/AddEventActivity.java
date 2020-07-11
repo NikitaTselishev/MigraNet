@@ -44,6 +44,9 @@ public class AddEventActivity extends AppCompatActivity {
     }
 
     public void create_event(View view){
+
+
+
         String name = name_view.getText().toString();
         String description = description_view.getText().toString();
         String time = time_view.getText().toString();

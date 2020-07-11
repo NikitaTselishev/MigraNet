@@ -4,10 +4,13 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -27,9 +30,11 @@ public class LoginActivity extends AppCompatActivity {
     EditText email_view;
     EditText password_view;
 
+
     TextView status_view;
     public static String session="";
     public static String error="";
+    public static String user_id="";
 
     public void goto_register(View view){
         Intent intent = new Intent(LoginActivity.this, RegisterActivity.class);
@@ -107,8 +112,11 @@ public class LoginActivity extends AppCompatActivity {
                             try {
                                 JSONObject answer = new JSONObject(decodedString);
                                 if (answer.has("result")){
+                                    Log.v(null,answer.toString());
                                     //status_view.setText("Your user session is "+answer.getJSONObject("result").getString("user_session"));
                                     session=answer.getJSONObject("result").getString("user_session");
+                                    user_id=answer.getJSONObject("result").getString("user_id");
+
                                 } else{
                                     if (answer.has("error")) {
                                         error=answer.getJSONObject("error").getString("message");
@@ -137,6 +145,7 @@ public class LoginActivity extends AppCompatActivity {
 
         if(session!=""){
             ((MigraNet)this.getApplication()).setSession(session);
+            ((MigraNet)this.getApplication()).setUserId(user_id);
             Intent intent = new Intent(LoginActivity.this, MainActivity.class);
             startActivity(intent);
         }
@@ -153,5 +162,8 @@ public class LoginActivity extends AppCompatActivity {
         password_view = (EditText)findViewById(R.id.password);
 
         status_view = (TextView)findViewById(R.id.status_view);
+
+
+
     }
 }

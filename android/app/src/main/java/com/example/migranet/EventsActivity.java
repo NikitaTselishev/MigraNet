@@ -13,6 +13,7 @@ import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationManager;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -47,10 +48,19 @@ public class EventsActivity extends AppCompatActivity {
         layout = (LinearLayout) findViewById(R.id.events);
 
 
+        try {
+            find_events(null);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
     }
 
 
     public void find_events(View view) throws JSONException {
+
+        layout.removeAllViews();
+
         LocationManager lm = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         @SuppressLint("MissingPermission") Location location = lm.getLastKnownLocation(LocationManager.GPS_PROVIDER);
         final double longitude = location.getLongitude();
@@ -65,7 +75,7 @@ public class EventsActivity extends AppCompatActivity {
 
         JSONObject filter = new JSONObject();
         try {
-            filter.put("user_session", session);
+            filter.put("user_session", Long.parseLong(session));
             filter.put("latitude", latitude);
             filter.put("longitude", longitude);
             filter.put("r", 100);
@@ -83,7 +93,7 @@ public class EventsActivity extends AppCompatActivity {
             e.printStackTrace();
         }
 
-
+        Log.v(null,"Requested "+request.toString());
 
         new Thread(new Runnable() {
             public void run() {
@@ -129,7 +139,7 @@ public class EventsActivity extends AppCompatActivity {
                             //status_view.setText(decodedString);
                             try {
                                 JSONObject answer = new JSONObject(decodedString);
-
+                                Log.v(null,decodedString);
                                 String test_text=answer.getString("result");
                                 JSONArray items = new JSONArray(test_text);
 
@@ -141,6 +151,7 @@ public class EventsActivity extends AppCompatActivity {
                                     View new_view = inflater.inflate(R.layout.event,layout);
 
                                     CardView card_view =(CardView) layout.getChildAt(i);
+                                    card_view.setTag(item.getString("action_id"));
                                     TextView name_view = (TextView)   ((CardView)card_view).getChildAt(0);
                                     name_view.setText(item.getString("name"));
                                     TextView description_view = (TextView)   ((CardView)card_view).getChildAt(1);
@@ -172,6 +183,12 @@ public class EventsActivity extends AppCompatActivity {
 
     }
 
+
+    public void chose_event(View view){
+        ((MigraNet)this.getApplication()).setEvent(view.getTag().toString());
+        Intent intent = new Intent(EventsActivity.this, EventInfoActivity.class);
+        startActivity(intent);
+    }
 
     public void goto_home(View view){
         Intent intent = new Intent(EventsActivity.this, MainActivity.class);
