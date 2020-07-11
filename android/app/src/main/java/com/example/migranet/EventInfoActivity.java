@@ -21,10 +21,16 @@ import org.json.JSONObject;
 
 import java.util.Arrays;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 
 public class EventInfoActivity extends AppCompatActivity {
+
+    //ScheduledExecutorService ses;
+
     TextView name_view;
     TextView description_view;
     TextView time_view;
@@ -64,7 +70,23 @@ public class EventInfoActivity extends AppCompatActivity {
         scroll_view = (ScrollView)findViewById(R.id.scroll_view);
         name_view.setText(event_id);
         refresh(null);
+
+        //ses = Executors.newSingleThreadScheduledExecutor();
+
+//        ses.scheduleAtFixedRate(new Runnable() {
+//            @Override
+//            public void run() {
+//                refresh(null);
+//            }
+//        }, 0, 10, TimeUnit.SECONDS);
+
+
     }
+
+//    protected void onDestroy() {
+//        super.onDestroy();
+//        ses.shutdown();
+//    }
 
     public void click_send(View view){
         if (is_member){
